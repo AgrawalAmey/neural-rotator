@@ -3,17 +3,23 @@
 
 # In[1]:
 
+import os
+import sys
 
 from keras import backend as K
 from keras.callbacks import TensorBoard
 from keras.datasets import mnist
-from keras.layers import Add, Conv2D, Dense, Input, Lambda, MaxPooling2D, Reshape, UpSampling2D
+from keras.layers import Add, BatchNormalization, Conv2D, Dense, Input, Lambda, MaxPooling2D, Reshape, UpSampling2D
 from keras.models import Model
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from skimage.transform import rotate
 
-from .shortcut import shortcut
+# module_path = os.path.abspath(os.path.join('..'))
+# if module_path not in sys.path:
+#     sys.path.append(module_path)
+
+# from rot_coder.shortcut import shortcut
 
 # In[2]:
 
@@ -24,10 +30,12 @@ shape_input = Input(shape=(12,))
 shape_input_reshaped = Reshape((1, 1, 12))(shape_input)
 
 x = Conv2D(16, (3, 3), activation='relu', padding='same')(input_img)
+x = BatchNormalization()(x)
 x = MaxPooling2D((2, 2), padding='same')(x)
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 x = MaxPooling2D((2, 2), padding='same')(x)
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
 x = MaxPooling2D((2, 2), padding='same')(x)
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 
@@ -39,10 +47,11 @@ shape_vec = Lambda(lambda x: K.tile(x, [1, 2, 2, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
 x = UpSampling2D((2, 2))(x)
 
-# Add
+# Add + BN
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 shape_vec = Lambda(lambda x: K.tile(x, [1, 4, 4, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
+x = BatchNormalization()(x)
 
 # Add + Upsample
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
@@ -50,10 +59,11 @@ shape_vec = Lambda(lambda x: K.tile(x, [1, 4, 4, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
 x = UpSampling2D((2, 2))(x)
 
-# Add
+# Add + BN
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 shape_vec = Lambda(lambda x: K.tile(x, [1, 8, 8, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
+x = BatchNormalization()(x)
 
 # Add + Upsample
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
@@ -62,10 +72,11 @@ x = Add()([x, shape_vec])
 x = UpSampling2D((2, 2))(x)
 
 
-# Add
+# Add + BN
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 shape_vec = Lambda(lambda x: K.tile(x, [1, 16, 16, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
+x = BatchNormalization()(x)
 
 # Upsample
 x = Conv2D(16, (3, 3), activation='relu')(x)
@@ -130,8 +141,6 @@ autoencoder.fit([x_train_repeated, train_shapes], x_train_transformed,
 
 
 # In[ ]:
-
-%matplotlib inline
 decoded_imgs = autoencoder.predict([x_test, test_shapes])
 
 n = 5

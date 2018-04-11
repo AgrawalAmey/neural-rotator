@@ -111,3 +111,5 @@
     Copy/paste this URL into your browser when you connect for the first time,
     to login with a token:
         http://localhost:8888/?token=c78cc935130c4db7ad246a6101bf62a99eacb6381d7c55de
+[NotebookApp | CRITICAL] received signal 15, stopping
+[NotebookApp | INFO] Shutting down 0 kernels
