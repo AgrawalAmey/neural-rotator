@@ -41,46 +41,65 @@ x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 
 encoded = MaxPooling2D((2, 2), padding='same')(x)
 
-# Add + Upsample
-x = Conv2D(12, (3, 3), activation='relu', padding='same')(encoded)
-shape_vec = Lambda(lambda x: K.tile(x, [1, 2, 2, 1]))(shape_input_reshaped)
-x = Add()([x, shape_vec])
+# Block 1
+# Convolution
+x = Conv2D(36, (3, 3), activation='relu', padding='same')(encoded)
+x = Conv2D(36, (3, 3), activation='relu', padding='same')(x)
+x = Conv2D(36, (3, 3), activation='relu', padding='same')(x)
+x = BatchNormalization()(x)
+
+# Upsample
+x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 x = UpSampling2D((2, 2))(x)
 
-# Add + BN
+# Block 2
+# Add
+x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
+shape_vec = Lambda(lambda x: K.tile(x, [1, 4, 4, 1]))(shape_input_reshaped)
+x = Add()([x, shape_vec])
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 shape_vec = Lambda(lambda x: K.tile(x, [1, 4, 4, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
 x = BatchNormalization()(x)
 
-# Add + Upsample
+# Upsample
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
-shape_vec = Lambda(lambda x: K.tile(x, [1, 4, 4, 1]))(shape_input_reshaped)
-x = Add()([x, shape_vec])
 x = UpSampling2D((2, 2))(x)
 
-# Add + BN
+# Block 3
+# Add
+x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
+shape_vec = Lambda(lambda x: K.tile(x, [1, 8, 8, 1]))(shape_input_reshaped)
+x = Add()([x, shape_vec])
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 shape_vec = Lambda(lambda x: K.tile(x, [1, 8, 8, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
 x = BatchNormalization()(x)
 
-# Add + Upsample
+# Upsample
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
-shape_vec = Lambda(lambda x: K.tile(x, [1, 8, 8, 1]))(shape_input_reshaped)
-x = Add()([x, shape_vec])
 x = UpSampling2D((2, 2))(x)
 
-
-# Add + BN
+# Block 4
+# Add
+x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
+shape_vec = Lambda(lambda x: K.tile(x, [1, 16, 16, 1]))(shape_input_reshaped)
+x = Add()([x, shape_vec])
 x = Conv2D(12, (3, 3), activation='relu', padding='same')(x)
 shape_vec = Lambda(lambda x: K.tile(x, [1, 16, 16, 1]))(shape_input_reshaped)
 x = Add()([x, shape_vec])
 x = BatchNormalization()(x)
 
 # Upsample
-x = Conv2D(16, (3, 3), activation='relu')(x)
+x = Conv2D(32, (3, 3), activation='relu')(x)
 x = UpSampling2D((2, 2))(x)
+
+# Block 5
+# Convolution
+x = Conv2D(32, (3, 3), activation='relu', padding='same')(x)
+x = Conv2D(32, (3, 3), activation='relu', padding='same')(x)
+x = Conv2D(32, (3, 3), activation='relu', padding='same')(x)
+
 decoded = Conv2D(1, (3, 3), activation='sigmoid', padding='same', name='last_conv')(x)
 
 autoencoder = Model(inputs=[input_img, shape_input], outputs=decoded)
@@ -137,7 +156,7 @@ autoencoder.fit([x_train_repeated, train_shapes], x_train_transformed,
                 batch_size=128,
                 shuffle=True,
                 validation_data=([x_test, test_shapes], x_test_transformed),
-                callbacks=[TensorBoard(log_dir='./logs/4')])
+                callbacks=[TensorBoard(log_dir='./logs/6')])
 
 
 # In[ ]:
